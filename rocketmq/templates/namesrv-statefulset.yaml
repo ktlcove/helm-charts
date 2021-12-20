@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "rocketmq.fullname" $ }}-namesrv
+  labels:
+    {{- include "rocketmq.labels" $ | nindent 4 }}
+    rocketmq.role: namesrv
+spec:
+  replicas: {{ .Values.namesrv.replicaCount }}
+  serviceName: {{ include "rocketmq.fullname" $ }}-namesrv-headless
+  selector:
+    matchLabels:
+      {{- include "rocketmq.labels" $ | nindent 6 }}
+      rocketmq.role: namesrv
+  template:
+    metadata:
+      labels:
+        {{- include "rocketmq.labels" $ | nindent 8 }}
+        rocketmq.role: namesrv
+    spec:
+      containers:
+      - name: rocketmq-namesrv
+        image: {{ .Values.namesrv.image.repository }}:{{ .Values.namesrv.image.tag }}
+        imagePullPolicy: {{ .Values.namesrv.image.pullPolicy }}
+        command: 
+        - /bin/sh
+        - mqnamesrv
+        {{- with .Values.namesrv.resources }}
+        resources:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        ports:
+        - containerPort: 9876
+          name: namesrv
+          protocol: TCP
+
+      {{- with .Values.namesrv.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      {{- with .Values.namesrv.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 6 }}
+      {{- end }}
+
+      {{- with .Values.namesrv.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

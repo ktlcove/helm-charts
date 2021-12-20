@@ -1,0 +1,40 @@
+{{- $fullname := include "rocketmq.fullname" . -}}
+{{- $ns := .Release.Namespace }}
+{{- $labels := ( include "rocketmq.labels" . | fromYaml ) }}
+
+{{- $_tmp := dict "namesrvs" list -}}
+
+{{- range $idx := ( until ( .Values.namesrv.replicaCount | int ) ) -}}
+ {{- $_x := printf "%s-namesrv-%s.%s-namesrv-headless:9876" $fullname (toString $idx) $fullname }}
+ {{- $_ := set $_tmp "namesrvs" ( append $_tmp.namesrvs $_x ) -}}
+{{- end }}
+
+{{- $namesrv_addrs := join ";" $_tmp.namesrvs -}}
+{{- $_ := set .Values.broker.properties "namesrvAddr" $namesrv_addrs -}}
+
+{{- range $bk := .Values.broker.brokers }}
+    {{- $broker := deepCopy $bk }}
+    {{- $_ := set $broker "fullname" $fullname }}
+    {{- $_ := set $broker "labels" $labels }}
+
+    {{- $_ := set $broker "image" ( deepCopy $.Values.broker.image ) }}
+
+    {{- if not ( hasKey $broker "env" ) }}
+        {{- $_ := set $broker "env" dict }}
+    {{- end }}
+    {{- $_ := set $broker "env" ( mustMergeOverwrite (deepCopy $.Values.broker.env) (deepCopy $broker.env) ) }}
+    {{- $_ := set $broker "properties" ( mustMergeOverwrite (deepCopy $.Values.broker.properties) (deepCopy $broker.properties) ) }}
+
+    {{- if not (hasKey $broker "resources" ) }}
+        {{- $_ := set $broker "resource" ( deepCopy $.Values.broker.resources ) -}}
+    {{- end }}
+
+    {{- $_ := set $broker "nodeSelector" ( deepCopy $.Values.broker.nodeSelector ) -}}
+    {{- $_ := set $broker "tolerations" ( deepCopy $.Values.broker.tolerations ) -}}
+    {{- $_ := set $broker "affinity" ( deepCopy $.Values.broker.affinity ) -}}
+    {{- $_ := set $broker "pvc" ( deepCopy $.Values.broker.pvc ) -}}
+
+    {{- include "rocketmq.broker" $broker }}    
+---
+
+{{- end }}

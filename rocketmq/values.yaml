@@ -1,0 +1,114 @@
+fullnameOverride: ""
+
+broker:
+  image:
+    repository: apacherocketmq/rocketmq-broker
+    tag: 4.5.0-alpine
+    pullPolicy: IfNotPresent
+  env:
+    JAVA_OPTS: ...
+  resources: {}
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  pvc: 
+    enabled: false
+    storageClass: '-'
+    size: 8Gi
+
+  properties: 
+    # brokerName: broker-a
+    # brokerId: 1
+    # namesrvAddr=172.17.182.230:9876;172.17.182.231:9876
+    # brokerIP1=172.17.182.231
+    brokerClusterName: DefaultCluster
+    deleteWhen: "16"
+    fileReservedTime: "12"
+    brokerRole: SLAVE
+    flushDiskType: ASYNC_FLUSH
+#   defaultTopicQueueNums=10
+# autoCreateTopicEnable=false
+# autoCreateSubscriptionGroup=false
+# mapedFileSizeCommitLog=1073741824
+# #mapedFileSizeConsumeQueue=300000
+# mapedFileSizeConsumeQueue=50000000
+# destroyMapedFileIntervalForcibly=120000
+# redeleteHangedFileInterval=120000
+# diskMaxUsedSpaceRatio=88
+# storePathRootDir=/data/var/rocketmq/store-b-s
+# storePathCommitLog=/data/var/rocketmq/store-b-s/commitlog
+# storePathConsumeQueue=/data/var/rocketmq/store-b-s/consumequeue
+# storePathIndex=/data/var/rocketmq/store-b-s/index
+# storeCheckpoint=/data/var/rocketmq/store-b-s/checkpoint
+# abortFile=/data/var/rocketmq/store-b-s/abort
+# maxMessageSize=6553600
+# flushCommitLogLeastPages=4
+# flushConsumeQueueLeastPages=2
+# flushCommitLogThoroughInterval=10000
+# flushConsumeQueueThoroughInterval=60000
+# checkTransactionMessageEnable=false
+# sendMessageThreadPoolNums=128
+# pullMessageThreadPoolNums=128
+  brokers: []
+  # - name: broker-a
+  #   id: "0"
+  #   properties:
+  #     brokerRole: ASYNC_MASTER
+  # # - name: broker-a
+  #   id: "1"
+  #   properties:
+  #     brokerRole: SLAVE
+  # - name: broker-b
+  #   id: "0"
+  #   properties:
+  #     brokerRole: ASYNC_MASTER
+  # - name: broker-b
+  #   id: "1"
+  #   properties:
+  #     brokerRole: SLAVE
+  
+
+# for console
+ingress:
+  enabled: false
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts: []
+  # - chart-example.local
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local  
+
+namesrv:
+  replicaCount: 1
+  image:
+    repository: apacherocketmq/rocketmq-nameserver
+    tag: 4.5.0-alpine
+    pullPolicy: IfNotPresent
+  resources: {}
+  service:
+    type: ClusterIP
+    port: 9876
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+console:
+  replicaCount: 1
+  image:
+    repository: apacherocketmq/rocketmq-console
+    tag: "2.0.0"
+    pullPolicy: IfNotPresent
+  resources: {}
+  service:
+    type: ClusterIP
+    port: 80
+  
